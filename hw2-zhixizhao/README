@@ -1,0 +1,101 @@
+Lkmalloc Library 
+
+Lkmalloc is a library that wraps libc memory allocation functions to log their improper (and proper)
+usage. In place of calling malloc, the user can use this libary to call lkmalloc instead, which
+would implement a variety of additional flags for other functionalities. Thus far, this libary
+contains 3 functions:
+
+***USAGE***
+
+lkmalloc
+
+Receives a u_int size, void **ptr, and u_int flags. Lkmalloc would attempt to allocate a memory
+block of the requested size and on success will change the provided pointer to the pointer
+to the block and return 0. The additional flags are a combination of:
+
+LKM_REG 0x0 - allocate normally
+LKM_INIT 0x1 - initialize block to 0
+LKM_OVER 0x2 - implement buffer overflow detection via pattern of bytes 0x5a
+LKM_UNDER 0x4 - implement buffer underflow detection via pattern of bytes 0x6b
+LKM_EXIST 0x8 - refuse to allocate block if pointer passed is not null
+LKM_REALLOC 0x10 - reallocate given pointer to a different size
+
+lkfree
+
+Receives a void **ptr and u_int flags. Lkfree would attempt to free the region of memory specified
+by ptr. On success, it frees the given block and returns 0. On error, lkfree will log the
+erroneous event and store the respective record as reference alongside returning the negative flag
+which the error occurred under. It catches common malpractices of memory allocation and provides 
+the options to make them visible. Lkfree can detect orphan frees, middle frees, and double frees. 
+The additional flags are a combination of:
+
+LKF_REG 0x0 - free normally, will prevent orphan, middle, and double frees
+LKF_APPROX 0x1 - permit middle frees
+LKF_WARN 0x2 - warn if a middle free is to be performed
+LKF_UNKNOWN 0x4 - warn if unknown/orphan pointer free is to be performed
+LKF_ERROR 0x8 - exit on middle or orphan frees
+
+lkreport
+
+Receives an int fd and a u_int flags. Lkreport displays the logged erroneous or successful events
+from lkmalloc and lkfree by printing it to the location file descriptor fd points to. On success,
+it returns the number of records and -errno otherwise. The contents of the display is determined
+by the combination of flags:
+
+LKR_NONE 0x0 - do not print
+LKR_SERIOUS 0x1 - print all memory leaks at time of invocation
+LKR_MATCH 0x2 - print perfectly matching malloc and free pairs
+LKR_BAD_FREE 0x4 - print middle frees
+LKR_ORPHAN_FREE 0x8 - print orphan frees
+LKR_DOUBLE_FREE 0x10 - print double frees
+LKR_APPROX 0x20 - print approximately matching malloc and middle free pairs
+
+***Layout***
+
+The lkmalloc library does not have a complex layout. It consists only of 2 files:
+
+headers.h contains the function declarations for the three usage functions, their associated
+helper functions (for example, a function for retrieving time using the timespec struct), their
+associated flags, and lastly the debugging functions. 
+
+lkmalloc.c contains and utilizes all the functions from headers.h and contains entirety of the
+library's functionality. It contains the data structures for both allocated memory blocks and
+records for the various logged events, making use of glib's g_array to manipulate and maintain
+the data structures.
+
+***Control Flow/Function Specifications***
+
+Initialization is performed if it hasn't been already.
+
+lkmalloc firstly validates the given flags and conditions required for specific flags. Eg. 
+LKM_REALLOC would check for a valid given pointer. If realloc is performed, the block to be 
+reallocated is freed and an address from realloc is returned, and an address from malloc otherwise.
+Then the memory setting functionality is handled; the initialization to 0 and the underflow/overflow
+buffers. Lastly, the memory block is stored in the list of memory blocks.
+
+lkfree firstly validates the given flags. Eg. LKF_APPROX cannot be passed with LKF_ERROR. Then it
+attempts to search for a block allocated by lkmalloc. If a block was not found, it means that the
+given pointer was never allocated and returns accordingly. If a block was indeed found and it was
+designated as FREE, then it means that the user is attempting to free the given pointer twice and
+a middle free detection is performed on top of this (by comparing addresses) to log this possible
+compound error. On double free and double middle free, lkfree returns. If middle free is detected,
+it is performed if it is approved by LKF_APPROX or else it returns. The final case is a perfectly
+matching free that proceeds as normal. Under all circumstances, lkfree will print appropriate
+warnings if requested, such as for middle frees under LKF_WARN, or will exit as requested under
+LKF_ERROR.
+
+lkreport simply iterates through the records list and prints the appropriate records requested by
+the flags and prints the remanining memory leaks if the flag was set.
+
+***Structure And Approach***
+
+I decided to go for the simplest approach involving the simplest data structure, which was simply
+a list that I could access and append to when necessary. The sheer volume of the data fields inside
+my memory block and record structs is largely inefficient, but it offers the advantage of having
+those fields conveniently accessible at all once. Since this would be difficult to scale, a more 
+efficient data structure such as a hash table could be used. For simplicity, everything is stored
+and everything is accessed via pure iteration.
+
+References: https://developer.gnome.org/glib/stable/glib-Arrays.html
+
+For glib usage.

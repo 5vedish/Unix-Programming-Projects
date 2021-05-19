@@ -1,0 +1,139 @@
+{
+    "extension": "linecount",
+    "version": "0.1.7",
+    "workspace": "/home/svedish/CSE_376/hw4-zhixizhao",
+    "linecount": [
+        {
+            "version": "0.1.7",
+            "counttime": "2021-05-04 15:23:57",
+            "filesum": 20,
+            "codesum": 683,
+            "commentsum": 52,
+            "blanksum": 201,
+            "filelist": [
+                {
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0,
+                    "filename": "channel.c"
+                },
+                {
+                    "filename": "client/client",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 37,
+                    "code": 122,
+                    "comment": 4,
+                    "filename": "client/client.c"
+                },
+                {
+                    "filename": "client/client.o",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 1,
+                    "code": 12,
+                    "comment": 0,
+                    "filename": "client/include/headers.h"
+                },
+                {
+                    "blank": 1,
+                    "code": 6,
+                    "comment": 2,
+                    "filename": "client/include/macros.h"
+                },
+                {
+                    "blank": 4,
+                    "code": 20,
+                    "comment": 6,
+                    "filename": "client/include/protocol.h"
+                },
+                {
+                    "blank": 11,
+                    "code": 16,
+                    "comment": 0,
+                    "filename": "client/Makefile"
+                },
+                {
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0,
+                    "filename": "MakeFile"
+                },
+                {
+                    "blank": 4,
+                    "code": 20,
+                    "comment": 6,
+                    "filename": "protocol.h"
+                },
+                {
+                    "blank": 4,
+                    "code": 3,
+                    "comment": 0,
+                    "filename": "README"
+                },
+                {
+                    "blank": 0,
+                    "code": 36,
+                    "comment": 0,
+                    "filename": "server/1"
+                },
+                {
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0,
+                    "filename": "server/1.err"
+                },
+                {
+                    "blank": 0,
+                    "code": 38,
+                    "comment": 0,
+                    "filename": "server/2"
+                },
+                {
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0,
+                    "filename": "server/2.err"
+                },
+                {
+                    "blank": 5,
+                    "code": 25,
+                    "comment": 0,
+                    "filename": "server/include/headers.h"
+                },
+                {
+                    "blank": 1,
+                    "code": 3,
+                    "comment": 0,
+                    "filename": "server/include/macros.h"
+                },
+                {
+                    "blank": 4,
+                    "code": 20,
+                    "comment": 6,
+                    "filename": "server/include/protocol.h"
+                },
+                {
+                    "blank": 10,
+                    "code": 18,
+                    "comment": 0,
+                    "filename": "server/Makefile"
+                },
+                {
+                    "blank": 119,
+                    "code": 344,
+                    "comment": 28,
+                    "filename": "server/server.c"
+                }
+            ]
+        }
+    ]
+}

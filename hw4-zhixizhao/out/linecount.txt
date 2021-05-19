@@ -1,0 +1,32 @@
+===============================================================================
+EXTENSION NAME : linecount
+EXTENSION VERSION : 0.1.7
+-------------------------------------------------------------------------------
+count time : 2021-05-04 15:23:57
+count workspace : /home/svedish/CSE_376/hw4-zhixizhao
+total files : 20
+total code lines : 683
+total comment lines : 52
+total blank lines : 201
+
+channel.c, code is 0, comment is 0, blank is 0.
+client/client, it is a binary file.
+client/client.c, code is 122, comment is 4, blank is 37.
+client/client.o, it is a binary file.
+client/include/headers.h, code is 12, comment is 0, blank is 1.
+client/include/macros.h, code is 6, comment is 2, blank is 1.
+client/include/protocol.h, code is 20, comment is 6, blank is 4.
+client/Makefile, code is 16, comment is 0, blank is 11.
+MakeFile, code is 0, comment is 0, blank is 0.
+protocol.h, code is 20, comment is 6, blank is 4.
+README, code is 3, comment is 0, blank is 4.
+server/1, code is 36, comment is 0, blank is 0.
+server/1.err, code is 0, comment is 0, blank is 0.
+server/2, code is 38, comment is 0, blank is 0.
+server/2.err, code is 0, comment is 0, blank is 0.
+server/include/headers.h, code is 25, comment is 0, blank is 5.
+server/include/macros.h, code is 3, comment is 0, blank is 1.
+server/include/protocol.h, code is 20, comment is 6, blank is 4.
+server/Makefile, code is 18, comment is 0, blank is 10.
+server/server.c, code is 344, comment is 28, blank is 119.
+===============================================================================

@@ -1,0 +1,94 @@
+Fenc V5.5
+
+fenc takes two input files and encypts/decrypts the first given file and dumps the result into the 
+second given file. The user can choose to include a passfile with the -p flag so a sha256 hash is
+appended to the beginning of the output file for security and verification purposes. If -p is not
+specified, fenc will prompt the user for a password from the terminal. The user can also specify a 
+-D flag to include a decimal debug value to choose various types of functions to print debug 
+statements for and additional information to print on top of them:
+
+0 - no debug statements (default)
+1 - fenc exclusive functions
+2 - library functions
+4 - system functions 
+16 - print function arguments
+32 - print function returns
+
+Note: the user can combine variations of the first three flags with variations of the last two.
+Run fenc with -h to refer to USAGE at any time.
+
+This program is split into 4 files. 
+
+"fenc.c" contains the main, which parses and validates arguments, validates both input files, and 
+proceeds to call the main algorithm on them. 
+
+"func.c" contains the 4 functions which performs all the error handling and encryption/decryption.
+
+"options.h" contains the function prototypes for func.c alongside global values that need to be
+shared across multiple files (like the debug flags). 
+
+"debug_macros.h" contains all the macro definitions like flags and 'wrappers' for print debugging.
+The wrappers could have been condensed into more specialized macros to cover multiple functions
+simultaneously (which was done for some OpenSSL calls), but I chose to have more templates for
+the sake of simplicity and so they wouldn't clutter up the main program.
+
+***Usage***
+
+The user is to specify either encryption or decryption and two input files. The remainder of the 
+flags are optional. Argument validation is performed in the main, which tests for whether the 
+combination of flags or debug values are legitimate. 
+
+The files are passed into the function 'valid_files', which validates whether the input files are 
+accessible or if they are special files that fenc cannot run on. If the files pass on, they are sent 
+to 'fenc_func', which is core of the program. 
+
+This function does some further file validation, such as whether there is enough space to allocate
+the resultant file in the file system and proceeds to open both files if possible. If infile is set 
+to stdin and outfile does not exist, default permissions would be set for outfile so the user can
+read and write. Otherwise, if outfile does not exist and infile exists, outfile will inherit the 
+permissions from infile. If both files exist, permissions are preserved.
+
+Past the permissions inheritance, fenc_func calls 'cpt_pass', which computes a hash based on the
+password provided from the user. If a passfile is not provided, the user must provide one from the
+terminal. cpt_pass uses the OpenSSL library to perform a sha256 hash on the password, which is 
+limited to the first newline or EOF in the passfile (whichever comes first), or just the newline if
+entered from the terminal. A DOUBLE hash is computed by hashing the initial hash with itself for
+maximum security, which is to be used later.
+
+Once the hashes are handled, fenc_func appends the double hash to outfile if the user requested 
+encryption and the SAME hash is verified if the user wishes to decrpyt the file. Under both 
+circumstances, the user must provide the SAME password for symmetric encryption and decryption to
+occur. Infile is then read in blocks of native OS page size and OpenSSL functions are then utilized 
+to perform the encryption under AES Counter Mode. The key used to perform this is the ORIGINAL hash.
+At the end of the function, return codes are used to determine which files need to be cleaned up.
+
+***Structure And Approach***
+
+I split my program into the four files because I felt that was all that was necessary. I wanted a
+place to keep globals and prototypes, hence options.h. The debug macros were numerous so I split it
+into another header and kept the rest of the other macros there for consistency. fenc handled the
+arguments so all that was left was to implement the main functionality. All of the functions inside
+func were closely related, so there was no reason to split them off elsewhere. Perhaps the file
+validations could've been split, but it was kept there so I could keep track of my logic.
+
+fenc_func is a massive function, especially when cluttered with debug wrappers. I chose to keep it
+this way so I can handle clean up within the same function. As with cpt_pass, everything I open or
+allocate is cleaned up at the end of function. This resembles the sandwich structure of code where 
+errors are handled by "falling through" a series of goto checkpoints depending on what needs to
+be cleaned up at the point of failure. The organization comes from essentially mirroring the
+program and performing operations in the center.
+
+For default permissions, I chose read/write for user only because it's reasonable that the user is
+the only one who is interested in the file at the moment. It should be secure for the person that
+wishes to perform the encryption/decryption.
+
+References: https://doc.lagout.org/network/Network%20Security%20With%20OpenSSL%202002.pdf
+(Chapters 6 and 7)
+
+***USAGE RESTRICTIONS***
+
+If the user wishes to pipe a passfile into fenc through stdin, use the -p flag instead.
+fenc uses a library function 'getpass' which does not support redirection.
+
+If a user wishes to pipe the output of fenc to stdout and received it again through stdin in
+another fenc command, use -p to pass in the passwords instead.

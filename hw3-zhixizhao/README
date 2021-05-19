@@ -1,0 +1,138 @@
+Tiny Shell (PLEASE Read Restrictions)
+
+***Introduction***
+
+Tiny Shell, or "tish", is a custom shell that mimics a subset of $bash's commands. It features
+four built-in internal commands and the capability to execute external commands. The four
+built-in commands are "pwd", "cd", "echo", and "exit". External commands comprise commands
+such as "ls", "rm", "touch", "cat", etc. Tish currently PROVIDES SUPPORT for: built-in commands,
+external commands, redirection, echo/variable, non-interaction, debug, time, globbing. Comments are 
+supported and do not provide extra functionality. Tish DOES NOT current support job control.
+
+***USAGE***
+
+The user can run the shell by executing it as a program---
+
+./tish
+
+Feeding it a script---
+
+cat foo.sh
+#! path_to_tish/tish 
+<script goes here>
+$./foo.sh
+
+Or both---
+
+./tish <script>
+
+The user can also specify certain flags such as time printouts for statistics broken down
+into real, system, and user time elapsed---
+
+./tish -t or ./<script> -t
+
+And also specify debug printouts for when functions enter and exit (return value specified)---
+
+./tish -d or ./<script> -d 
+
+If a script is provided, tish will run in non-interactive mode, which means the shell executes
+the script and exits. Otherwise, tish will continue to prompt the user for commands until the
+user exits. Most, if not all, bugs are handled and will be clearly printed, so tish can continue
+to run.
+
+Redirection is done via a combination of---
+
+command < file (for stdin)
+
+command > file (for stdout)
+
+command 2> file (for stderr)
+
+Assignment to env variables are done via---
+
+a=b
+
+And in echo---
+
+echo $a
+echo $? (for previous function return value)
+
+For globbing---
+
+echo *.txt
+
+***RESTRICTIONS***
+
+Scripts: must end with the command exit and newline
+
+Eg.
+<rest of script>
+exit\n
+
+Echo Assignment: do not perform with any other command, no spaces between eg. "a=b" , multiple
+assignments CAN be space separated eg. "a=b c=d"
+
+Commands: limited to 100 tokens
+
+Directories: limited to 4096 bytes
+
+***Layout***
+
+Tish does not have a complex layout. Since all arguments and commands are stored within global
+arrays, it made the most sense to maintain all of its functions inside one C file. This made
+flags and data structures easier to keep track of and access. Within the header files, there is
+one for macros which holds the sensible limitations and restrictions for Tish's properties
+(such as max number of commands) alongside a debug printing macro. The second header is for
+defining structs for the arguments passed to Tish alongside the declarations of all the functions
+and flags for the shell.
+
+Tish.c itself contains the main for the shell and all the other functions necessary for running
+it. The functions are split into:
+
+Argument Retrieval Functions (ret_arg)
+Special Features (set_streams)
+Built In (echo)
+External (execute)
+Clean Up (my_exit)
+
+***Function Specs***
+
+main  
+
+Initiates a loop that prompts the user for commands until the user exits or until the end
+of script is reached.
+
+ret_arg
+
+Retrieves the next line from the user or script and establishes an Arg struct to be stored
+globally, default streams are set.
+
+parse_arg 
+
+Processes the Arg struct and proceeds to execute the command provided by the user. Handles
+assignment (which won't execute anthing else) and sets streams if they've changed. Determines
+what to execute via flags. Executing external commands via execvp is performed in a child
+process, which terminates while the shell continues to run.
+
+echo
+
+Dumps the contents of what the user types back into stdout or into files if specified. Checks
+for the "$" indicator to retrieve environment variables and prints them.
+
+pwd
+
+Retrieves the current working directory via syscall and prints it.
+
+cwd
+
+Checks to see if the requested directory is valid and switches to it.
+
+execute
+
+Parses the current command and passes an argv array to execvp so the requested program
+can be executed.
+
+set_streams
+
+Checks for redirection indicators and assigned the appropriate fields in the corresponding
+Arg struct.
